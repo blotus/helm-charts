@@ -9,12 +9,15 @@ on:
       - "charts/**/README.md" # ensure section exists; regen when touched
       - ".github/workflows/release.yaml"
       - "charts/**/Chart.yaml"
+  release:
+    types: [published]
   # Adjust if your chart lives elsewhere
 env:
   CHART_DIR: charts/crowdsec
 
 jobs:
   update-readme:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -45,13 +48,12 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           message: "chore(charts): regenerate README.md"
-          branch: main
 
   release:
+    if: github.event_name == 'push'
     needs: update-readme
     permissions:
       contents: write # for helm/chart-releaser-action to push chart release and create a release
-      packages: write # for pushing chart to the GHCR registry
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -69,27 +71,37 @@ jobs:
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
-        id: cr
         with:
           config: cr.yaml
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_SKIP_EXISTING: true
-          
-      - if: ${{ steps.cr.outputs.changed_charts }}
-        name: Login to GitHub Container Registry
+
+  push-to-ghcr:
+    if: github.event_name == 'release'
+    permissions:
+      packages: write # for pushing chart to the GHCR registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - if: ${{ steps.cr.outputs.changed_charts }}
-        name: Push Charts to GHCR
+      - name: Download and Push Chart to GHCR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          for pkg in .cr-release-packages/*; do
-            if [ -z "${pkg:-}" ]; then
-              break
-            fi
-            helm push "${pkg}" oci://ghcr.io/${{ github.repository }}
-          done
+          # The release tag is the chart name and version (e.g., crowdsec-1.2.3)
+          TAG="${{ github.event.release.tag_name }}"
+
+          # Download the chart package from the release assets
+          gh release download "${TAG}" --pattern "*.tgz" --repo ${{ github.repository }}
+
+          # Push the downloaded chart to GHCR
+          helm push "${TAG}.tgz" oci://ghcr.io/${{ github.repository }}
