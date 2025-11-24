@@ -2,7 +2,7 @@ name: Push chart
 
 on:
     release:
-        types: [released]
+        types: [published]
 
 jobs:
     push-to-ghcr:
