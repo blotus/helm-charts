@@ -1,0 +1,39 @@
+apiVersion: v1
+entries:
+  crowdsec:
+  - apiVersion: v2
+    appVersion: v1.7.0
+    created: "2025-11-24T19:41:56.211684105Z"
+    description: Crowdsec helm chart is an open-source, lightweight agent to detect
+      and respond to bad behaviours.
+    digest: 2f009639bcfaa8aa61ecd10be498ad472a9ae9af5b2666e8864982698c2a06bb
+    name: crowdsec
+    type: application
+    urls:
+    - https://github.com/blotus/helm-charts/releases/download/crowdsec-0.20.3/crowdsec-0.20.3.tgz
+    version: 0.20.3
+  crowdsec-traefik-bouncer:
+  - apiVersion: v2
+    appVersion: 0.5.0
+    created: "2025-11-24T19:41:56.354348156Z"
+    deprecated: true
+    description: A http service to verify request and bounce them according to decisions
+      made by CrowdSec.
+    digest: ae23da188aae569640498c666e961169b93e6c84152062d2655ed465839bd4d9
+    name: crowdsec-traefik-bouncer
+    type: application
+    urls:
+    - https://github.com/blotus/helm-charts/releases/download/crowdsec-traefik-bouncer-0.1.4/crowdsec-traefik-bouncer-0.1.4.tgz
+    version: 0.1.4
+  helloworld:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2025-11-24T19:41:56.484936307Z"
+    description: A helloWorld chart for Kubernetes using ingress nginx
+    digest: 65d1c6d502effab05f23dcb8b107c6a9ae7073238be767e3f81cd650d3e2bdb4
+    name: helloworld
+    type: application
+    urls:
+    - https://github.com/blotus/helm-charts/releases/download/helloworld-0.2.1/helloworld-0.2.1.tgz
+    version: 0.2.1
+generated: "2025-11-24T19:41:56.484942418Z"
