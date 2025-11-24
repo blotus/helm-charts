@@ -1,0 +1,34 @@
+name: Push chart
+
+on:
+    release:
+        types: [released]
+
+jobs:
+    push-to-ghcr:
+        permissions:
+            packages: write # for pushing chart to the GHCR registry
+        runs-on: ubuntu-latest
+        steps:
+            - name: Install Helm
+              uses: azure/setup-helm@v4
+
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.repository_owner }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Download and Push Chart to GHCR
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  # The release tag is the chart name and version (e.g., crowdsec-1.2.3)
+                  TAG="${{ github.event.release.tag_name }}"
+
+                  # Download the chart package from the release assets
+                  gh release download "${TAG}" --pattern "*.tgz" --repo ${{ github.repository }}
+
+                  # Push the downloaded chart to GHCR
+                  helm push "${TAG}.tgz" oci://ghcr.io/${{ github.repository }}
